@@ -6,7 +6,7 @@ from glob import glob
 from matplotlib import pyplot as plt
 from scipy.ndimage.filters import gaussian_filter
 from matplotlib import pyplot as plt
-
+from exr_utils import load_exr, save_exr
 # image_list = list(glob('./*.png'))
 # sigmadots = 8
 #
@@ -28,7 +28,6 @@ from matplotlib import pyplot as plt
 #     print('{0}: {1} (8-bit) {2} (summed)'.format(fname,count,countdot))
 #     fname_out = fname.replace('.png','.npy')
 #     np.save(fname_out, dot)
-
 def main():
     # fname_image = "100156_A02IndiaWE-03-S20100626080000000E20100626233000000_new.split.5_1.jpg"
     # fname_label = "100156_A02IndiaWE-03-S20100626080000000E20100626233000000_new.split.5_1.mat"
@@ -60,6 +59,7 @@ def main():
     plt.imshow(labeled_image)
     plt.figure(2)
     plt.imshow(dmap)
+    save_exr("{}.exr".format(fname_image),dmap)
     # plt.show()
     return
 
