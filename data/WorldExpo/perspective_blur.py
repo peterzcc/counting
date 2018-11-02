@@ -8,7 +8,7 @@ from scipy.ndimage.filters import gaussian_filter
 from matplotlib import pyplot as plt
 from exr_utils import load_exr, save_exr
 import os
-from pathlib import Path
+import argparse
 
 def generate_dmap(head_locs, pmap):
     dmap = np.zeros(pmap.shape[0:2], dtype='float32')
@@ -17,7 +17,7 @@ def generate_dmap(head_locs, pmap):
     for i in range(num_heads):
         x, y = head_locs[i]
         single_density = np.zeros(dmap.shape, dtype='float32')
-        single_density[y, x] = 1.
+        single_density[y-1, x-1] = 1.
         sigma = 0.2 * pmap[y, x]
         sigmas.append(sigma)
         dmap += gaussian_filter(single_density, sigma)
@@ -28,8 +28,11 @@ def generate_dmap(head_locs, pmap):
 
 
 def main():
-    data_dir = "/mnt/m2/mzcc/crowd_data/worldexpo"
-    prefix = "train"
+    parser = argparse.ArgumentParser(description='generate dmap.')
+    parser.add_argument('--pre', type=str, default='train', help='train, test, etc')
+    args = parser.parse_args()
+    data_dir = "."
+    prefix = args.pre
     label_top_dir = "{}/{}_label".format(data_dir, prefix)
     persp_dir = "{}/{}_perspective".format(data_dir, prefix)
     output_dir = "{}/{}_dmap".format(data_dir, prefix)
