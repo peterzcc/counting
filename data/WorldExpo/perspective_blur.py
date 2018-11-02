@@ -16,8 +16,10 @@ def generate_dmap(head_locs, pmap):
     num_heads = head_locs.shape[0]
     for i in range(num_heads):
         x, y = head_locs[i]
+        x -= 1
+        y -= 1 # change from matlab index to python index
         single_density = np.zeros(dmap.shape, dtype='float32')
-        single_density[y-1, x-1] = 1.
+        single_density[y, x] = 1.
         sigma = 0.2 * pmap[y, x]
         sigmas.append(sigma)
         dmap += gaussian_filter(single_density, sigma)
