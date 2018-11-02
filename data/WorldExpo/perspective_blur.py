@@ -51,6 +51,10 @@ def main():
         this_scene_path = "{}/{}".format(label_top_dir,name_label_subd)
         for label_name in os.listdir(os.fsencode(this_scene_path)):
             name_label = os.fsdecode(label_name)
+            output_path = "{}/{}.exr".format(output_dir, name_label[:-4])
+            if os.path.exists(output_path):
+                print("exists: {}".format(output_path))
+                continue
             if name_label == "roi.mat":
                 continue
             path_label = "{}/{}".format(this_scene_path,name_label)
@@ -58,7 +62,7 @@ def main():
             file_head_labels = sio.loadmat(path_label)
             head_locs = file_head_labels["point_position"]
             dmap = generate_dmap(head_locs, pmap)
-            output_path = "{}/{}.exr".format(output_dir,name_label[:-4])
+
             print(output_path)
             save_exr(output_path, dmap)
 
