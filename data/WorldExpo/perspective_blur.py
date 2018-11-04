@@ -25,9 +25,11 @@ def generate_dmap(head_locs, pmap):
         sigmas.append(sigma)
         dmap += gaussian_filter(single_density, sigma)
     dmap_sum = np.sum(dmap)
+    assert not np.isnan(dmap).any()
     if dmap_sum > 0:
         norm_factor = num_heads / dmap_sum
         dmap = norm_factor * dmap
+    assert not np.isnan(dmap).any()
     return dmap
 
 
