@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 from exr_utils import load_exr, save_exr
 import os
 import argparse
+import hdf5storage
 
 def generate_dmap(head_locs, pmap):
     dmap = np.zeros(pmap.shape[0:2], dtype='float32')
@@ -47,38 +48,42 @@ def main():
         assert os.path.exists(persp_fname)
         file_pmap = sio.loadmat(persp_fname)
         pmap = file_pmap["pMap"]
-        print(os.fsdecode(label_subd))
+        # print(os.fsdecode(label_subd))
         this_scene_path = "{}/{}".format(label_top_dir,name_label_subd)
         for label_name in os.listdir(os.fsencode(this_scene_path)):
             name_label = os.fsdecode(label_name)
-            output_path = "{}/{}.exr".format(output_dir, name_label[:-4])
-            if os.path.exists(output_path):
-                print("exists: {}".format(output_path))
-                continue
             if name_label == "roi.mat":
                 continue
+            if not name_label.endswith(".mat"):
+                continue
+            output_path = "{}/{}.exr".format(output_dir, name_label[:-4])
+            if os.path.exists(output_path):
+                # print("exists: {}".format(output_path))
+                continue
+
             path_label = "{}/{}".format(this_scene_path,name_label)
-            # print(path_label)
-            file_head_labels = sio.loadmat(path_label)
-            head_locs = file_head_labels["point_position"]
+            file_head_labels = hdf5storage.loadmat(path_label)
+            head_locs = np.array(file_head_labels["point_position"]).astype(int)
+            # print(head_locs)
             dmap = generate_dmap(head_locs, pmap)
 
             print(output_path)
             save_exr(output_path, dmap)
 
 
+def test():
+    fname_image = "100156_A02IndiaWE-03-S20100626080000000E20100626233000000_new.split.75_3.jpg"
+    fname_label = "200707_C09-04-S20100717083000000E20100717233000000_1_clip1_1.mat"
+    fname_pmap = "200707.mat"
 
-    # fname_image = "100156_A02IndiaWE-03-S20100626080000000E20100626233000000_new.split.75_3.jpg"
-    # fname_label = "100156_A02IndiaWE-03-S20100626080000000E20100626233000000_new.split.75_3.mat"
-    # fname_pmap = "100156.mat"
     # file_pmap = sio.loadmat(fname_pmap)
-    # file_head_labels = sio.loadmat(fname_label)
     # img = io.imread(fname_image)
     # pmap = file_pmap["pMap"]
-    # head_locs = file_head_labels["point_position"]
+    # file_head_labels = hdf5storage.loadmat(fname_label)
+    # head_locs = np.array(file_head_labels["point_position"]).astype(int)
     # dmap = generate_dmap(head_locs, pmap)
-    #
-    #
+
+
     # plt.figure(1)
     # plt.imshow(img)
     # plt.figure(2)
@@ -86,8 +91,25 @@ def main():
     # plt.show()
     #
     # save_exr("{}.exr".format(fname_image),dmap)
+    roi_fname = "roi.mat"
+    roi = hdf5storage.loadmat(roi_fname)
+    from PIL import Image, ImageDraw
+    w,h = 720,576
+    vx = roi["maskVerticesXCoordinates"] - 1
+    vy = roi["maskVerticesYCoordinates"] - 1
+    img = Image.new('L', (w, h), 0)
+
+    polygon = np.squeeze(np.array([(x,y) for x,y in zip(vx,vy)]))
+    polygon = np.round(polygon)
+    ImageDraw.Draw(img).polygon(polygon, outline=1, fill=1)
+    mask = np.array(img)*255
+    plt.imshow(mask,cmap='gray')
+    plt.show()
+
 
     return
 
+
 if __name__ == "__main__":
     main()
+    # test()
